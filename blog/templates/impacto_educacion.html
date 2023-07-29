@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %} 
+
+{% block contenido %}
+    {% block extra_css %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/impacto_educacion.css' %}">
+    {% endblock %}
+    <div id="contenido-impacto-educacion" class="contenido">
+    <div id="contenido" class="contenido">
+        <h1>Impacto de la IA en educación</h1>
+        {% for post in posts %}
+        <h3>{{ post.titulo }}</h3>
+        <p>{{ post.texto }}</p>
+        {% if post.imagen %}
+            <img src="{{ post.imagen.url }}" alt="Imagen del post">
+        {% endif %}
+        <h4>Comentarios</h4>
+        {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'agregar_comentario' pk=post.pk %}">
+                {% csrf_token %}
+                {{ comentario_form.as_p }}
+                <button type="submit">Agregar comentario</button>
+            </form>
+            {% if es_colaborador %}
+                <a href="{% url 'editar_post' pk=post.pk %}" class="boton_editar">Editar artículo</a>
+                <a href="{% url 'eliminar_post' pk=post.pk %}" class="boton_eliminar">Eliminar artículo</a>
+            {% endif %}
+        {% endif %}
+        {% for comentario in post.comentarios.all %}
+            <p>{{ comentario.contenido }}</p>
+            <p>Por: {{ comentario.autor.username }} - Fecha: {{ comentario.fecha|date:"d-m-Y H:i:s" }}</p>
+            {% if user.is_authenticated %}
+                    {% if es_colaborador %}
+                         <a href="{% url 'eliminar_comentario' pk=comentario.pk %}">Eliminar</a>
+                     {% elif user == comentario.autor %}
+                         <a href="{% url 'eliminar_comentario' pk=comentario.pk %}">Eliminar</a>
+                    {% endif %}
+                {% endif %}
+        {% empty %}
+            <p>No hay comentarios aún.</p>
+        {% endfor %}
+        {% empty %}
+        <p>No hay posts disponibles.</p>
+        {% endfor %}
+    </div>
+    </div>
+{% endblock %}
